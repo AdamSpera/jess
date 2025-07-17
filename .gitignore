@@ -1,0 +1,7 @@
+.venv
+__pycache__
+jess/__pycache__
+jess/connection/__pycache__
+jess/inventory/__pycache__
+jess/utils/__pycache__
+tests/__pycache__

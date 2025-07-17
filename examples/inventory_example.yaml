@@ -1,0 +1,70 @@
+# Jess Inventory Example
+#
+# This file demonstrates the structure and options for the jess inventory file.
+# By default, jess looks for this file at ~/.jess/inventory.yaml
+#
+# You can edit this file directly with: jess edit
+# You can load a different inventory file with: jess load /path/to/inventory.yaml
+# You can view your current inventory with: jess show
+
+devices:
+  # Basic router example with all connection methods
+  - hostname: router1                      # Hostname used for lookup with 'jess router1'
+    ip: 192.168.1.1                        # IP address or domain name
+    protocols:                             # Connection methods in order of preference
+      - ssh-modern                         # Try modern SSH first (most secure)
+      - ssh-legacy                         # Fall back to legacy SSH if modern fails
+      - telnet                             # Last resort: try Telnet (least secure)
+    username: admin                        # Username for authentication
+    password: securepass                   # Password for authentication
+
+  # Modern switch example with only SSH
+  - hostname: switch1
+    ip: 192.168.1.2
+    protocols:
+      - ssh-modern                         # Only try modern SSH
+    username: admin
+    password: switch_password
+
+  # Legacy device example that needs relaxed SSH settings
+  - hostname: legacy-device
+    ip: 10.0.0.5
+    protocols:
+      - ssh-legacy                         # Start with legacy SSH for old devices
+      - telnet                             # Fall back to Telnet if needed
+    username: admin
+    password: legacy_pass
+
+  # Telnet-only device example
+  - hostname: telnet-only
+    ip: 10.0.0.10
+    protocols:
+      - telnet                             # Only try Telnet
+    username: admin
+    password: telnet_pass
+
+  # Example with domain name instead of IP
+  - hostname: cloud-router
+    ip: router.example.com                 # Domain name works too
+    protocols:
+      - ssh-modern
+    username: cloud_admin
+    password: cloud_pass
+
+# Protocol Options Explained:
+# 
+# ssh-modern: Uses modern SSH algorithms and security settings
+#   - Best for newer devices and security-conscious environments
+#   - Uses strict host key checking
+#   - Supports modern encryption algorithms
+#
+# ssh-legacy: Uses relaxed SSH settings for compatibility
+#   - For older network devices with basic SSH implementations
+#   - Disables strict host key checking
+#   - Enables legacy key exchange algorithms and ciphers
+#   - Less secure but more compatible
+#
+# telnet: Uses the Telnet protocol
+#   - For very old devices or those without SSH support
+#   - Unencrypted - passwords sent in plaintext
+#   - Use only when necessary for compatibility
