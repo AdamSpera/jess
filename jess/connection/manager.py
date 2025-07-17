@@ -54,7 +54,7 @@ class ConnectionManager:
         self.ssh_handler = SSHHandler()
         self.telnet_handler = TelnetHandler()
     
-    def connect(self, hostname):
+    def connect(self, hostname, ssh_port=None, telnet_port=None):
         """
         Connect to a device by hostname.
         
@@ -64,6 +64,8 @@ class ConnectionManager:
         
         Args:
             hostname: The hostname of the device to connect to
+            ssh_port: Optional custom SSH port (overrides inventory setting)
+            telnet_port: Optional custom Telnet port (overrides inventory setting)
             
         Returns:
             ConnectionResult object with connection status and session
@@ -81,6 +83,14 @@ class ConnectionManager:
         username = device.get("username")
         password = device.get("password")
         protocols = device.get("protocols", ["ssh-modern", "ssh-legacy", "telnet"])
+        
+        # Get port information from device or use defaults
+        device_ssh_port = device.get("ssh_port", 22)
+        device_telnet_port = device.get("telnet_port", 23)
+        
+        # Override with command line parameters if provided
+        ssh_port = ssh_port or device_ssh_port
+        telnet_port = telnet_port or device_telnet_port
         
         # Validate required fields
         if not ip:
@@ -103,13 +113,48 @@ class ConnectionManager:
         
         print(info(f"Connecting to {hostname} ({ip})..."))
         
+        # We already extracted port information above, no need to do it again
+        
         # Try each protocol in order
         for protocol in protocols:
             print(attempt(f"Trying {protocol} connection..."))
             
-            if protocol == "ssh-modern":
+            if protocol == "ssh":
+                # Try modern SSH first
+                print(attempt(f"Trying modern SSH connection..."))
                 success, session, message = self.ssh_handler.connect_modern(
-                    ip, username, password
+                    ip, username, password, port=ssh_port
+                )
+                
+                if success:
+                    return ConnectionResult(
+                        success=True,
+                        protocol="ssh-modern",
+                        message=message,
+                        session=session
+                    )
+                else:
+                    print(warning(f"Modern SSH connection failed: {message}"))
+                    
+                    # Then try legacy SSH
+                    print(attempt(f"Trying legacy SSH connection..."))
+                    success, session, message = self.ssh_handler.connect_legacy(
+                        ip, username, password, port=ssh_port
+                    )
+                    
+                    if success:
+                        return ConnectionResult(
+                            success=True,
+                            protocol="ssh-legacy",
+                            message=message,
+                            session=session
+                        )
+                    else:
+                        print(warning(f"Legacy SSH connection failed: {message}"))
+            
+            elif protocol == "ssh-modern":
+                success, session, message = self.ssh_handler.connect_modern(
+                    ip, username, password, port=ssh_port
                 )
                 
                 if success:
@@ -124,7 +169,7 @@ class ConnectionManager:
                     
             elif protocol == "ssh-legacy":
                 success, session, message = self.ssh_handler.connect_legacy(
-                    ip, username, password
+                    ip, username, password, port=ssh_port
                 )
                 
                 if success:
@@ -139,7 +184,7 @@ class ConnectionManager:
                     
             elif protocol == "telnet":
                 success, session, message = self.telnet_handler.connect(
-                    ip, username, password
+                    ip, username, password, port=telnet_port
                 )
                 
                 if success:

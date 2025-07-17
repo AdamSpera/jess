@@ -12,19 +12,19 @@ devices:
   - hostname: router1                      # Hostname used for lookup with 'jess router1'
     ip: 192.168.1.1                        # IP address or domain name
     protocols:                             # Connection methods in order of preference
-      - ssh-modern                         # Try modern SSH first (most secure)
-      - ssh-legacy                         # Fall back to legacy SSH if modern fails
-      - telnet                             # Last resort: try Telnet (least secure)
+      - ssh                                # Try SSH (modern then legacy) first
+      - telnet                             # Fall back to Telnet if SSH fails
     username: admin                        # Username for authentication
     password: securepass                   # Password for authentication
 
-  # Modern switch example with only SSH
+  # Modern switch example with only SSH and custom port
   - hostname: switch1
     ip: 192.168.1.2
     protocols:
       - ssh-modern                         # Only try modern SSH
     username: admin
     password: switch_password
+    ssh_port: 2222                         # Custom SSH port (default is 22)
 
   # Legacy device example that needs relaxed SSH settings
   - hostname: legacy-device
@@ -42,6 +42,7 @@ devices:
       - telnet                             # Only try Telnet
     username: admin
     password: telnet_pass
+    telnet_port: 8023                      # Custom Telnet port (default is 23)
 
   # Example with domain name instead of IP
   - hostname: cloud-router
@@ -53,6 +54,11 @@ devices:
 
 # Protocol Options Explained:
 # 
+# ssh: Tries both SSH methods in sequence (modern then legacy)
+#   - Convenient option that attempts modern SSH first
+#   - Falls back to legacy SSH if modern fails
+#   - Best for mixed environments with various device types
+#
 # ssh-modern: Uses modern SSH algorithms and security settings
 #   - Best for newer devices and security-conscious environments
 #   - Uses strict host key checking

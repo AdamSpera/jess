@@ -92,10 +92,17 @@ def validate_inventory(inventory_data):
             return False, f"Protocols for device '{device['hostname']}' must be a list"
         
         # Check valid protocol values
-        valid_protocols = ["ssh-modern", "ssh-legacy", "telnet"]
+        valid_protocols = ["ssh", "ssh-modern", "ssh-legacy", "telnet"]
         for protocol in device["protocols"]:
             if protocol not in valid_protocols:
                 return False, f"Invalid protocol '{protocol}' for device '{device['hostname']}'. Valid options are: {', '.join(valid_protocols)}"
+        
+        # Check port values if present
+        if "ssh_port" in device and not isinstance(device["ssh_port"], int):
+            return False, f"SSH port for device '{device['hostname']}' must be an integer"
+            
+        if "telnet_port" in device and not isinstance(device["telnet_port"], int):
+            return False, f"Telnet port for device '{device['hostname']}' must be an integer"
     
     return True, ""
 
@@ -114,7 +121,7 @@ def create_default_inventory(file_path):
             {
                 "hostname": "example-router",
                 "ip": "192.168.1.1",
-                "protocols": ["ssh-modern", "ssh-legacy", "telnet"],
+                "protocols": ["ssh", "telnet"],  # Using 'ssh' will try modern then legacy
                 "username": "admin",
                 "password": "password123"
             },
@@ -123,7 +130,16 @@ def create_default_inventory(file_path):
                 "ip": "192.168.1.2",
                 "protocols": ["ssh-modern"],
                 "username": "admin",
-                "password": "securepass"
+                "password": "securepass",
+                "ssh_port": 2222  # Example of custom SSH port
+            },
+            {
+                "hostname": "legacy-device",
+                "ip": "10.0.0.5",
+                "protocols": ["ssh-legacy", "telnet"],
+                "username": "admin",
+                "password": "legacy_pass",
+                "telnet_port": 8023  # Example of custom Telnet port
             }
         ]
     }

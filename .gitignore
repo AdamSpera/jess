@@ -5,3 +5,4 @@ jess/connection/__pycache__
 jess/inventory/__pycache__
 jess/utils/__pycache__
 tests/__pycache__
+test.yaml

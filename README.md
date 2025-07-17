@@ -22,7 +22,7 @@ A Python-based CLI tool for efficiently connecting to network devices via SSH an
 
 ```bash
 # Install directly from GitHub repository
-pip3 install git+https://github.com/username/jess.git
+pip3 install git+https://github.com/adamspera/jess.git
 
 # Or clone and install locally
 git clone https://github.com/username/jess.git

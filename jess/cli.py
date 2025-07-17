@@ -32,6 +32,8 @@ def main():
     # Connect command (default when hostname is provided)
     connect_parser = subparsers.add_parser("connect", help="Connect to a device")
     connect_parser.add_argument("hostname", help="Hostname of the device to connect to")
+    connect_parser.add_argument("--ssh-port", type=int, help="Custom SSH port (overrides inventory setting)")
+    connect_parser.add_argument("--telnet-port", type=int, help="Custom Telnet port (overrides inventory setting)")
     
     # Edit inventory command
     edit_parser = subparsers.add_parser("edit", help="Edit inventory file")
@@ -49,8 +51,18 @@ def main():
     # Special case: if the first argument doesn't start with '-' and isn't a known command,
     # treat it as a hostname for the connect command
     if len(sys.argv) > 1 and not sys.argv[1].startswith('-') and sys.argv[1] not in ['connect', 'edit', 'load', 'show']:
-        hostname = sys.argv[1]
-        return handle_connect_command(hostname, inventory_manager)
+        # Create a simple parser for the hostname case to handle optional arguments
+        hostname_parser = argparse.ArgumentParser(add_help=False)
+        hostname_parser.add_argument("hostname", help="Hostname of the device to connect to")
+        hostname_parser.add_argument("--ssh-port", type=int, help="Custom SSH port")
+        hostname_parser.add_argument("--telnet-port", type=int, help="Custom Telnet port")
+        
+        # Parse the arguments
+        args, _ = hostname_parser.parse_known_args()
+        
+        return handle_connect_command(args.hostname, inventory_manager, 
+                                     ssh_port=args.ssh_port, 
+                                     telnet_port=args.telnet_port)
     
     # Parse arguments
     args = parser.parse_args()
@@ -62,7 +74,9 @@ def main():
     
     # Execute command
     if args.command == "connect":
-        return handle_connect_command(args.hostname, inventory_manager)
+        return handle_connect_command(args.hostname, inventory_manager, 
+                                     ssh_port=args.ssh_port if hasattr(args, 'ssh_port') else None,
+                                     telnet_port=args.telnet_port if hasattr(args, 'telnet_port') else None)
     elif args.command == "edit":
         return handle_edit_command(inventory_manager)
     elif args.command == "load":
@@ -73,13 +87,15 @@ def main():
     # Should never reach here due to argparse
     return 1
 
-def handle_connect_command(hostname, inventory_manager):
+def handle_connect_command(hostname, inventory_manager, ssh_port=None, telnet_port=None):
     """
     Handle the connect command.
     
     Args:
         hostname: The hostname of the device to connect to
         inventory_manager: An instance of InventoryManager
+        ssh_port: Optional custom SSH port
+        telnet_port: Optional custom Telnet port
         
     Returns:
         int: Exit code (0 for success, 1 for failure)
@@ -87,7 +103,7 @@ def handle_connect_command(hostname, inventory_manager):
     connection_manager = ConnectionManager(inventory_manager)
     
     # Attempt to connect to the device
-    result = connection_manager.connect(hostname)
+    result = connection_manager.connect(hostname, ssh_port=ssh_port, telnet_port=telnet_port)
     
     if not result.success:
         print(error(f"Failed to connect to {hostname}: {result.message}"))
