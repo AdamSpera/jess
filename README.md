@@ -17,48 +17,75 @@ A Python-based CLI tool for efficiently connecting to network devices via SSH an
 
 Download from GitHub via Pip.
 
-```bash
+```
 pip install git+https://github.com/adamspera/jess.git
   or
 pip3 install git+https://github.com/adamspera/jess.git
 ```
 
+Note: you may need `--break-system-packages` at teh end on some platforms.
+
+```
+pip3 install git+https://github.com/adamspera/jess.git --break-system-packages
+```
+
 After installation, verify that Jess is correctly installed:
 
-```bash
+```
 jess --version
 ```
 
 ## Usage
 
-### Basic Commands
+### Basics
 
-```bash
-# Connect to a device by hostname (defined in inventory)
-jess router1
-
-# Edit your device inventory in the default editor (nano)
-jess edit
-
+```
 # Display your device inventory in a formatted table
-jess show
-
-# Load inventory from a custom file
-jess load /path/to/inventory.yaml
-
-# Get help with available commands
-jess --help
+> jess show
++----------------------+-----------------+---------------------------+-----------------+-----------------+------------+
+| Hostname             | IP Address      | Protocols                 | Username        | Password        | Port       |
++----------------------+-----------------+---------------------------+-----------------+-----------------+------------+
+| c9300                | 10.100.2.7      | telnet, ssh               | admin           | C1s********     | Default    |
+| comm                 | 10.100.2.6      | ssh-legacy, telnet        | admin           | C1s********     | Default    |
++----------------------+-----------------+---------------------------+-----------------+-----------------+------------+
 ```
 
-### Connection Examples
+```
+# Edit your device inventory in the default editor (nano)
+> jess edit
+```
 
-```bash
-# Connect to a device with default settings
-jess router1
+```
+# Connect to a device by hostname (defined in inventory)
+> jess c9300
+Connecting to c9300 (10.100.2.7)...
+Trying telnet connection...
+Attempting Telnet connection to 10.100.2.7:23...
+Connection to 10.100.2.7:23 refused
+Telnet connection failed: Connection to 10.100.2.7:23 refused
+Trying ssh connection...
+Trying modern SSH connection...
+Attempting modern SSH connection to 10.100.2.7:22...
+Successfully connected to 10.100.2.7 via modern SSH
+Successfully connected to c9300 using ssh-modern
+Entering SSH session. Type 'exit' to close the connection.
+c9300>
+```
 
-# Connect and specify a specific protocol to try first
-jess router1 --protocol ssh-modern
+```
+# Load inventory from a custom file (optional)
+> jess load example.yaml
+Inventory loaded successfully from example.yaml
+```
 
+```
+# Get help with available commands
+> jess --help
+```
+
+### Advanced
+
+```
 # Connect with verbose output (shows more connection details)
 jess router1 --verbose
 
@@ -69,23 +96,22 @@ jess router1 --debug
 jess router1 --ssh-port 2222
 ```
 
-## Inventory Management
+## Locations
 
 The inventory is stored at `~/.jess/inventory.yaml` by default. You can edit this file directly or use the built-in commands.
 
-### Inventory File Format
+### Inventory Format
 
 ```yaml
 devices:
   # Basic router example with all connection methods
-  - hostname: router1 # Hostname used for lookup with 'jess router1'
-    ip: 192.168.1.1 # IP address or domain name
-    username: admin # Username for authentication
-    password: secure123 # Password for authentication
-    protocols: # Connection methods in order of preference
-      - ssh-modern # Try modern SSH first (most secure)
-      - ssh-legacy # Fall back to legacy SSH if modern fails
-      - telnet # Last resort: try Telnet (least secure)
+  - hostname: router1       # Hostname used for lookup with 'jess router1'
+    ip: 192.168.1.1         # IP address or domain name
+    username: admin         # Username for authentication
+    password: secure123     # Password for authentication
+    protocols:              # Connection methods in order of preference
+      - ssh                 # Try BOTH modern and legacy SSH first (most secure)
+      - telnet              # Last resort: try Telnet (least secure)
     # No port specified - will use defaults (22 for SSH, 23 for Telnet)
 
   # Modern switch example with only SSH
@@ -94,84 +120,9 @@ devices:
     username: admin
     password: switch_password
     protocols:
-      - ssh-modern # Only try modern SSH
-    port: 2222 # Custom port for SSH
-
-  # Legacy device example that needs relaxed SSH settings
-  - hostname: legacy-device
-    ip: 10.0.0.5
-    username: admin
-    password: legacy_pass
-    protocols:
-      - ssh-legacy # Start with legacy SSH for old devices
-      - telnet # Fall back to Telnet if needed
-    port: 8023 # Custom port for both SSH and Telnet
-```
-
-### Required Fields
-
-Each device entry requires:
-
-- `hostname`: Name used to connect with the `jess` command
-- `ip`: IP address or domain name of the device
-- `username`: Login username for the device
-- `password`: Login password for the device
-- `protocols`: List of connection methods to try (in order of preference)
-  - Valid options: `ssh-modern`, `ssh-legacy`, `telnet`
-- `port`: Port number for connections (optional, defaults to 22 for SSH and 23 for Telnet)
-
-### Creating a New Inventory
-
-If you don't have an inventory file yet, running `jess edit` will create a template file with example entries that you can modify.
-
-## Connection Methods
-
-Jess supports three connection methods that are tried in sequence if a connection fails:
-
-### Protocol Options Explained
-
-1. **ssh-modern**: Standard SSH with modern security algorithms
-
-   - Best for newer devices and security-conscious environments
-   - Uses strict host key checking
-   - Supports modern encryption algorithms
-
-2. **ssh-legacy**: SSH with relaxed security settings for older devices
-
-   - For older network devices with basic SSH implementations
-   - Disables strict host key checking
-   - Enables legacy key exchange algorithms and ciphers
-   - Less secure but more compatible
-
-3. **telnet**: Basic Telnet connection (least secure)
-   - For very old devices or those without SSH support
-   - Unencrypted - passwords sent in plaintext
-   - Use only when necessary for compatibility
-
-## Security Considerations
-
-- Passwords are stored in plaintext in the inventory file. Use with caution in shared environments.
-- Consider using file permissions to restrict access to your inventory file:
-  ```bash
-  chmod 600 ~/.jess/inventory.yaml
-  ```
-- Telnet connections are unencrypted and should only be used for devices that don't support SSH.
-- Legacy SSH mode disables some security features to support older devices.
-
-## Troubleshooting
-
-### Common Issues
-
-- **Connection Timeout**: Verify the IP address and that the device is reachable
-- **Authentication Failure**: Check the username and password in your inventory
-- **Protocol Not Supported**: Try adding additional protocols to the device entry
-
-### Debug Mode
-
-For more detailed connection information:
-
-```bash
-jess router1 --debug
+      - ssh-modern          # Only try modern SSH
+      - ssh-legacy          # Only try legacy SSH
+    port: 2020              # Custom port for both applicable protocols
 ```
 
 ## License
