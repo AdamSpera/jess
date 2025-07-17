@@ -13,24 +13,15 @@ A Python-based CLI tool for efficiently connecting to network devices via SSH an
 
 ## Installation
 
-### Prerequisites
-
-- Python 3.6 or higher
-- pip package manager
-
 ### Install from GitHub
 
+DOwnload from GitHub via Pip.
+
 ```bash
-# Install directly from GitHub repository
+pip install git+https://github.com/adamspera/jess.git
+  or
 pip3 install git+https://github.com/adamspera/jess.git
-
-# Or clone and install locally
-git clone https://github.com/username/jess.git
-cd jess
-pip3 install -e .
 ```
-
-### Verify Installation
 
 After installation, verify that Jess is correctly installed:
 
@@ -70,6 +61,12 @@ jess router1 --protocol ssh-modern
 
 # Connect with verbose output (shows more connection details)
 jess router1 --verbose
+
+# Connect with debug mode for maximum troubleshooting information
+jess router1 --debug
+
+# Connect with a custom port (overrides inventory setting)
+jess router1 --ssh-port 2222
 ```
 
 ## Inventory Management
@@ -81,31 +78,34 @@ The inventory is stored at `~/.jess/inventory.yaml` by default. You can edit thi
 ```yaml
 devices:
   # Basic router example with all connection methods
-  - hostname: router1                      # Hostname used for lookup with 'jess router1'
-    ip: 192.168.1.1                        # IP address or domain name
-    protocols:                             # Connection methods in order of preference
-      - ssh-modern                         # Try modern SSH first (most secure)
-      - ssh-legacy                         # Fall back to legacy SSH if modern fails
-      - telnet                             # Last resort: try Telnet (least secure)
-    username: admin                        # Username for authentication
-    password: securepass                   # Password for authentication
+  - hostname: router1 # Hostname used for lookup with 'jess router1'
+    ip: 192.168.1.1 # IP address or domain name
+    username: admin # Username for authentication
+    password: secure123 # Password for authentication
+    protocols: # Connection methods in order of preference
+      - ssh-modern # Try modern SSH first (most secure)
+      - ssh-legacy # Fall back to legacy SSH if modern fails
+      - telnet # Last resort: try Telnet (least secure)
+    # No port specified - will use defaults (22 for SSH, 23 for Telnet)
 
   # Modern switch example with only SSH
   - hostname: switch1
     ip: 192.168.1.2
-    protocols:
-      - ssh-modern                         # Only try modern SSH
     username: admin
     password: switch_password
+    protocols:
+      - ssh-modern # Only try modern SSH
+    port: 2222 # Custom port for SSH
 
   # Legacy device example that needs relaxed SSH settings
   - hostname: legacy-device
     ip: 10.0.0.5
-    protocols:
-      - ssh-legacy                         # Start with legacy SSH for old devices
-      - telnet                             # Fall back to Telnet if needed
     username: admin
     password: legacy_pass
+    protocols:
+      - ssh-legacy # Start with legacy SSH for old devices
+      - telnet # Fall back to Telnet if needed
+    port: 8023 # Custom port for both SSH and Telnet
 ```
 
 ### Required Fields
@@ -114,10 +114,11 @@ Each device entry requires:
 
 - `hostname`: Name used to connect with the `jess` command
 - `ip`: IP address or domain name of the device
-- `protocols`: List of connection methods to try (in order of preference)
-  - Valid options: `ssh-modern`, `ssh-legacy`, `telnet`
 - `username`: Login username for the device
 - `password`: Login password for the device
+- `protocols`: List of connection methods to try (in order of preference)
+  - Valid options: `ssh-modern`, `ssh-legacy`, `telnet`
+- `port`: Port number for connections (optional, defaults to 22 for SSH and 23 for Telnet)
 
 ### Creating a New Inventory
 
@@ -130,11 +131,13 @@ Jess supports three connection methods that are tried in sequence if a connectio
 ### Protocol Options Explained
 
 1. **ssh-modern**: Standard SSH with modern security algorithms
+
    - Best for newer devices and security-conscious environments
    - Uses strict host key checking
    - Supports modern encryption algorithms
 
 2. **ssh-legacy**: SSH with relaxed security settings for older devices
+
    - For older network devices with basic SSH implementations
    - Disables strict host key checking
    - Enables legacy key exchange algorithms and ciphers

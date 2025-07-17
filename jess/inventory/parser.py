@@ -82,10 +82,12 @@ def validate_inventory(inventory_data):
             return False, f"Device at index {i} must be a dictionary"
         
         # Check required fields
-        required_fields = ["hostname", "ip", "protocols", "username", "password"]
+        required_fields = ["hostname", "ip", "username", "password", "protocols"]
         for field in required_fields:
             if field not in device:
                 return False, f"Device '{device.get('hostname', f'at index {i}')}' is missing required field: {field}"
+                
+        # Note: port is optional and will default to 22 for SSH and 23 for Telnet
         
         # Check protocols field is a list
         if not isinstance(device["protocols"], list):
@@ -98,6 +100,9 @@ def validate_inventory(inventory_data):
                 return False, f"Invalid protocol '{protocol}' for device '{device['hostname']}'. Valid options are: {', '.join(valid_protocols)}"
         
         # Check port values if present
+        if "port" in device and not isinstance(device["port"], int):
+            return False, f"Port for device '{device['hostname']}' must be an integer"
+            
         if "ssh_port" in device and not isinstance(device["ssh_port"], int):
             return False, f"SSH port for device '{device['hostname']}' must be an integer"
             
@@ -121,25 +126,26 @@ def create_default_inventory(file_path):
             {
                 "hostname": "example-router",
                 "ip": "192.168.1.1",
-                "protocols": ["ssh", "telnet"],  # Using 'ssh' will try modern then legacy
                 "username": "admin",
-                "password": "password123"
+                "password": "password123",
+                "protocols": ["ssh", "telnet"]  # Using 'ssh' will try modern then legacy
+                # No port specified - will use defaults (22 for SSH, 23 for Telnet)
             },
             {
                 "hostname": "example-switch",
                 "ip": "192.168.1.2",
-                "protocols": ["ssh-modern"],
                 "username": "admin",
                 "password": "securepass",
-                "ssh_port": 2222  # Example of custom SSH port
+                "protocols": ["ssh-modern"],
+                "port": 2222  # Custom port for SSH
             },
             {
                 "hostname": "legacy-device",
                 "ip": "10.0.0.5",
-                "protocols": ["ssh-legacy", "telnet"],
                 "username": "admin",
                 "password": "legacy_pass",
-                "telnet_port": 8023  # Example of custom Telnet port
+                "protocols": ["ssh-legacy", "telnet"],
+                "port": 8023  # Custom port for both SSH and Telnet
             }
         ]
     }

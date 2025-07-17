@@ -11,46 +11,49 @@ devices:
   # Basic router example with all connection methods
   - hostname: router1                      # Hostname used for lookup with 'jess router1'
     ip: 192.168.1.1                        # IP address or domain name
+    username: admin                        # Username for authentication
+    password: secure123                    # Password for authentication
     protocols:                             # Connection methods in order of preference
       - ssh                                # Try SSH (modern then legacy) first
       - telnet                             # Fall back to Telnet if SSH fails
-    username: admin                        # Username for authentication
-    password: securepass                   # Password for authentication
+    # No port specified - will use defaults (22 for SSH, 23 for Telnet)
 
   # Modern switch example with only SSH and custom port
   - hostname: switch1
     ip: 192.168.1.2
-    protocols:
-      - ssh-modern                         # Only try modern SSH
     username: admin
     password: switch_password
-    ssh_port: 2222                         # Custom SSH port (default is 22)
+    protocols:
+      - ssh-modern                         # Only try modern SSH
+    port: 2222                             # Custom port for SSH
 
   # Legacy device example that needs relaxed SSH settings
   - hostname: legacy-device
     ip: 10.0.0.5
+    username: admin
+    password: legacy_pass
     protocols:
       - ssh-legacy                         # Start with legacy SSH for old devices
       - telnet                             # Fall back to Telnet if needed
-    username: admin
-    password: legacy_pass
+    port: 8023                             # Custom port for both SSH and Telnet
 
   # Telnet-only device example
   - hostname: telnet-only
     ip: 10.0.0.10
-    protocols:
-      - telnet                             # Only try Telnet
     username: admin
     password: telnet_pass
-    telnet_port: 8023                      # Custom Telnet port (default is 23)
+    protocols:
+      - telnet                             # Only try Telnet
+    port: 8023                             # Custom Telnet port
 
   # Example with domain name instead of IP
   - hostname: cloud-router
     ip: router.example.com                 # Domain name works too
-    protocols:
-      - ssh-modern
     username: cloud_admin
     password: cloud_pass
+    protocols:
+      - ssh-modern
+    # No port specified - will use default SSH port (22)
 
 # Protocol Options Explained:
 # 

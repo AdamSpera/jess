@@ -167,8 +167,8 @@ class InventoryManager:
             return ""
             
         # Define table headers and column widths
-        headers = ["Hostname", "IP Address", "Protocols", "Username", "Password"]
-        widths = [20, 15, 25, 15, 15]
+        headers = ["Hostname", "IP Address", "Protocols", "Username", "Password", "Port"]
+        widths = [20, 15, 25, 15, 15, 10]
         
         # Create the header row
         header_row = "| " + " | ".join(h.ljust(w) for h, w in zip(headers, widths)) + " |"
@@ -189,13 +189,29 @@ class InventoryManager:
             # Format protocols as comma-separated list
             protocols = ", ".join(device.get("protocols", []))
             
+            # Get port information
+            port = device.get("port", "")
+            if not port:
+                # If no generic port, try to show protocol-specific ports
+                ssh_port = device.get("ssh_port", "")
+                telnet_port = device.get("telnet_port", "")
+                if ssh_port and telnet_port:
+                    port = f"SSH:{ssh_port}, Telnet:{telnet_port}"
+                elif ssh_port:
+                    port = f"SSH:{ssh_port}"
+                elif telnet_port:
+                    port = f"Telnet:{telnet_port}"
+                else:
+                    port = "Default"
+            
             # Create the row
             row = "| " + " | ".join([
                 device.get("hostname", "").ljust(widths[0]),
                 device.get("ip", "").ljust(widths[1]),
                 protocols.ljust(widths[2]),
                 device.get("username", "").ljust(widths[3]),
-                masked_password.ljust(widths[4])
+                masked_password.ljust(widths[4]),
+                str(port).ljust(widths[5])
             ]) + " |"
             
             table.append(row)

@@ -24,7 +24,7 @@ This document provides information for developers who want to contribute to or m
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/username/jess.git
+git clone https://github.com/adamspera/jess.git
 cd jess
 ```
 

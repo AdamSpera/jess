@@ -96,7 +96,27 @@
   - Add test coverage reporting
   - _Requirements: All_
 
-- [ ] 10. Create user and developer documentation
+- [x] 9. Implement additional CLI features
+
+  - [x] 9.1 Add version flag to display tool version
+
+    - Implement `--version` flag in CLI
+    - Display version information from package metadata
+    - _Requirements: 1.2_
+
+  - [x] 9.2 Add verbose and debug output options
+
+    - Implement `--verbose` flag for detailed connection information
+    - Implement `--debug` flag for troubleshooting
+    - Add logging configuration based on verbosity level
+    - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
+
+  - [x] 9.3 Add protocol selection option
+    - Implement `--protocol` flag to specify preferred protocol
+    - Override protocol order from inventory when specified
+    - _Requirements: 3.1, 3.2, 3.3_
+
+- [x] 10. Create user and developer documentation
 
   - [x] 10.1 Create example inventory file
 
