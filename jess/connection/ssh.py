@@ -138,9 +138,14 @@ class SSHHandler:
             transport.auth_timeout = timeout
             
             # Apply legacy algorithm settings
-            transport.get_security_options().kex = legacy_algorithms['kex'] + transport.get_security_options().kex
-            transport.get_security_options().ciphers = legacy_algorithms['cipher'] + transport.get_security_options().ciphers
-            transport.get_security_options().digests = legacy_algorithms['mac'] + transport.get_security_options().digests
+            # Convert tuples to lists if needed before concatenation
+            current_kex = list(transport.get_security_options().kex) if isinstance(transport.get_security_options().kex, tuple) else transport.get_security_options().kex
+            current_ciphers = list(transport.get_security_options().ciphers) if isinstance(transport.get_security_options().ciphers, tuple) else transport.get_security_options().ciphers
+            current_digests = list(transport.get_security_options().digests) if isinstance(transport.get_security_options().digests, tuple) else transport.get_security_options().digests
+            
+            transport.get_security_options().kex = legacy_algorithms['kex'] + current_kex
+            transport.get_security_options().ciphers = legacy_algorithms['cipher'] + current_ciphers
+            transport.get_security_options().digests = legacy_algorithms['mac'] + current_digests
             
             # Start the connection
             transport.start_client()

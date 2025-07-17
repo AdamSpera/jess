@@ -15,7 +15,7 @@ A Python-based CLI tool for efficiently connecting to network devices via SSH an
 
 ### Install from GitHub
 
-DOwnload from GitHub via Pip.
+Download from GitHub via Pip.
 
 ```bash
 pip install git+https://github.com/adamspera/jess.git
