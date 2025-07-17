@@ -29,8 +29,7 @@ class TelnetHandler:
         Returns:
             Tuple of (success, session, message)
         """
-        print(warning(f"Attempting Telnet connection to {host}:{port}..."))
-        print(warning("Note: Telnet is an insecure protocol. Use SSH when possible."))
+        print(attempt(f"Attempting Telnet connection to {host}:{port}..."))
         
         try:
             # Create a new Telnet client with timeout
@@ -40,7 +39,7 @@ class TelnetHandler:
             login_prompt = tn.read_until(b"login: ", timeout)
             if b"login: " not in login_prompt:
                 # If we don't get a login prompt, try to continue anyway
-                print(warning("No standard login prompt detected, attempting to send username anyway"))
+                pass
             
             # Send username
             tn.write(username.encode('ascii') + b"\n")
@@ -49,13 +48,13 @@ class TelnetHandler:
             password_prompt = tn.read_until(b"Password: ", timeout)
             if b"Password: " not in password_prompt:
                 # If we don't get a password prompt, try to continue anyway
-                print(warning("No standard password prompt detected, attempting to send password anyway"))
+                pass
             
             # Send password
             tn.write(password.encode('ascii') + b"\n")
             
             # Wait for command prompt (this varies by device, so we'll wait a moment)
-            time.sleep(2)
+            time.sleep(1)
             
             # Check if we're logged in by sending a blank line and seeing if we get a prompt back
             tn.write(b"\n")
