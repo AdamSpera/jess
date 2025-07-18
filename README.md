@@ -2,6 +2,8 @@
 
 A Python-based CLI tool for efficiently connecting to network devices via SSH and Telnet with intelligent fallback mechanisms. Jess simplifies the process of managing and connecting to multiple network devices by providing a unified interface with automatic protocol selection.
 
+Named after the inventory sticker label on my first eBay network rack.
+
 ## Features
 
 - Connect to network devices with a single command
@@ -23,7 +25,7 @@ pip install git+https://github.com/adamspera/jess.git
 pip3 install git+https://github.com/adamspera/jess.git
 ```
 
-Note: you may need `--break-system-packages` at teh end on some platforms.
+Note: you may need `--break-system-packages` at the end on some platforms.
 
 ```
 pip3 install git+https://github.com/adamspera/jess.git --break-system-packages
